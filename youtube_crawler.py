@@ -4,8 +4,10 @@ import pandas as pd
 def ScrapComments(title,N = 2,n = 10, searchword = 'trailer', stop = 2,**kwargs):
     '''
     Coleta os comentários dos primeiros N vídeos da busca
-    title + searchword, dando n scrolls na pagina dos videos
-    por coleta.
+    title + searchword, coletando n comentários de cada vídeo.
+    O argumento stop atua como condição de parada que indica
+    o número máximo de scrolls em uma página de vídeo ao coletar
+    os comentários.
 
     INPUTS:
     title      --> Título do filme
