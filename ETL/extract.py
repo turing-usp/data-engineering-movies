@@ -21,9 +21,11 @@ class ExtractDataTMDB:
 
 		self._get_and_customize_genres()
 	
+	
 	@property
 	def df(self):
 		return self._dataframe
+
 
 	def _make_request(self, endpoint, params = {}):
 		if params:
@@ -45,6 +47,13 @@ class ExtractDataTMDB:
 
 		for genre in unique_genres:
 			self._genres_map[genre['id']] = genre['name']
+
+		# Customizando gêneros
+		self._genres_map[10766] = 'Novela'
+		self._genres_map[10765] = ['Ficção científica', 'Fantasia']
+		self._genres_map[10762] = 'Infantil'
+		self._genres_map[10768] = ['Guerra', 'Política']
+		self._genres_map[10759] = ['Ação', 'Aventura']
 
 
 	def _get_details(self):
