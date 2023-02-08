@@ -86,13 +86,13 @@ class ExtractDataTMDB:
 				raise Exception(f'Error on request for detail [media {media["id"]}]')
 
 
-	def _get_media(self, endpoint, initial_page = None, final_page = None, params = None):
-		params = {}
+	def _get_media(self, endpoint, initial_page = None, final_page = None, params = {}):
 		if not initial_page:
 			initial_page = 0
 		if not final_page or final_page < initial_page:
 			final_page = initial_page
 
+		self._response = []
 		for page in range(initial_page, final_page + 1):
 			params['page'] = page
 			res = self._make_request(endpoint, params)
@@ -102,7 +102,7 @@ class ExtractDataTMDB:
 					break
 				self._response.extend(responseData['results'])
 			else:
-				raise Exception(f'Error on request [page {page}]')
+				raise Exception(f'Error on request [page {page}] - status {res.status_code}')
 
 
 	def _serialize_genres(self):
@@ -144,3 +144,4 @@ class ExtractDataTMDB:
 		self._get_details()
 		self._serialize_genres()
 		self._create_dataframe()
+		return self._dataframe
