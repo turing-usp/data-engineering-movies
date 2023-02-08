@@ -2,13 +2,10 @@ import requests
 import pandas as pd
 import json
 
-from settings import API_KEY
+from settings import API_KEY, BASE_URL
 
 
-BASE_URL = 'https://api.themoviedb.org/3'
-
-
-class ExtractDataTMDB:
+class Extract:
 
 
 	def __init__(self, details = [], media_type = 'movie'):
@@ -18,6 +15,7 @@ class ExtractDataTMDB:
 		self._details = details
 		self._default_params = {'api_key': API_KEY, 'language': 'pt-BR'}
 		self._genres_map = {}
+		self._endpoint = ''
 
 		self._get_and_customize_genres()
 	
@@ -28,32 +26,11 @@ class ExtractDataTMDB:
 
 
 	def _make_request(self, endpoint, params = {}):
-		if params:
-			self._default_params.update(params)
-		return requests.get(BASE_URL + endpoint, params=self._default_params)
+		...
 
 
 	def _get_and_customize_genres(self):
-		endpoint_genres_tv = '/genre/tv/list'
-		endpoint_genres_movie = '/genre/movie/list'
-
-		genres_tv_res = requests.get(BASE_URL + endpoint_genres_tv, params=self._default_params)
-		genres_tv = json.loads(genres_tv_res.text)['genres']
-		genres_movie_res = requests.get(BASE_URL + endpoint_genres_movie, params=self._default_params)
-		genres_movie = json.loads(genres_movie_res.text)['genres']
-
-		unique_genres = list(set([tuple(d.items()) for d in genres_movie + genres_tv]))
-		unique_genres = [dict(genre) for genre in unique_genres]
-
-		for genre in unique_genres:
-			self._genres_map[genre['id']] = genre['name']
-
-		# Customizando gêneros
-		self._genres_map[10766] = 'Novela'
-		self._genres_map[10765] = ['Ficção científica', 'Fantasia']
-		self._genres_map[10762] = 'Infantil'
-		self._genres_map[10768] = ['Guerra', 'Política']
-		self._genres_map[10759] = ['Ação', 'Aventura']
+		...
 
 
 	def _get_details(self):
@@ -86,7 +63,7 @@ class ExtractDataTMDB:
 				raise Exception(f'Error on request for detail [media {media["id"]}]')
 
 
-	def _get_media(self, endpoint, initial_page = None, final_page = None, params = {}):
+	def _get_media(self, initial_page = None, final_page = None, params = {}):
 		if not initial_page:
 			initial_page = 0
 		if not final_page or final_page < initial_page:
@@ -95,7 +72,7 @@ class ExtractDataTMDB:
 		self._response = []
 		for page in range(initial_page, final_page + 1):
 			params['page'] = page
-			res = self._make_request(endpoint, params)
+			res = self._make_request(self._endpoint, params)
 			if res.ok:
 				responseData = json.loads(res.text)
 				if not responseData['results']:
@@ -137,11 +114,3 @@ class ExtractDataTMDB:
 		
 		self._dataframe = final_df
 
-
-	def get_route(self, route, initial_page = 1, final_page = 1):
-		endpoint = route.replace(':t', self._type)
-		self._get_media(endpoint, initial_page, final_page)
-		self._get_details()
-		self._serialize_genres()
-		self._create_dataframe()
-		return self._dataframe
