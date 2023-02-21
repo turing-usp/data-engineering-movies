@@ -20,18 +20,36 @@ class Extract:
 		self._get_and_customize_genres()
 	
 	
+	def _make_request(self, endpoint = '', params = {}):
+		...
+	
+
 	@property
 	def df(self):
 		return self._dataframe
 
 
-	def _make_request(self, endpoint, params = {}):
-		...
-
-
 	def _get_and_customize_genres(self):
-		...
+		endpoint_genres_tv = '/genre/tv/list'
+		endpoint_genres_movie = '/genre/movie/list'
 
+		genres_tv_res = requests.get(BASE_URL + endpoint_genres_tv, params=self._default_params)
+		genres_tv = json.loads(genres_tv_res.text)['genres']
+		genres_movie_res = requests.get(BASE_URL + endpoint_genres_movie, params=self._default_params)
+		genres_movie = json.loads(genres_movie_res.text)['genres']
+
+		unique_genres = list(set([tuple(d.items()) for d in genres_movie + genres_tv]))
+		unique_genres = [dict(genre) for genre in unique_genres]
+
+		for genre in unique_genres:
+			self._genres_map[genre['id']] = genre['name']
+
+		# Customizando gêneros
+		self._genres_map[10766] = 'Novela'
+		self._genres_map[10765] = ['Ficção científica', 'Fantasia']
+		self._genres_map[10762] = 'Infantil'
+		self._genres_map[10768] = ['Guerra', 'Política']
+		self._genres_map[10759] = ['Ação', 'Aventura']
 
 	def _get_details(self):
 		for media in self._response:
