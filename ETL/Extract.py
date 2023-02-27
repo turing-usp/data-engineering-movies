@@ -54,7 +54,7 @@ class Extract:
 	def _get_details(self):
 		for media in self._response:
 			endpoint = f'/{self._type}/{media["id"]}'
-			res = self._make_request(endpoint)
+			res = requests.get(BASE_URL + endpoint, params=self._default_params)
 			data = {}
 			values = {}
 
