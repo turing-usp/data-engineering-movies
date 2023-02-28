@@ -137,3 +137,6 @@ airflow-docker/logs
 # TMDB export files
 files/*
 !files/.gitkeep
+
+#Setings file
+settings.py

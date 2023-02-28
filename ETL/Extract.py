@@ -21,7 +21,9 @@ class Extract:
 	
 	
 	def _make_request(self, endpoint = '', params = {}):
-		...
+		if params:
+			self._default_params.update(params)
+		return requests.get(BASE_URL + endpoint, params=self._default_params)
 	
 
 	@property
@@ -33,9 +35,9 @@ class Extract:
 		endpoint_genres_tv = '/genre/tv/list'
 		endpoint_genres_movie = '/genre/movie/list'
 
-		genres_tv_res = requests.get(BASE_URL + endpoint_genres_tv, params=self._default_params)
+		genres_tv_res = self._make_request(endpoint_genres_tv)
 		genres_tv = json.loads(genres_tv_res.text)['genres']
-		genres_movie_res = requests.get(BASE_URL + endpoint_genres_movie, params=self._default_params)
+		genres_movie_res = self._make_request(endpoint_genres_movie)
 		genres_movie = json.loads(genres_movie_res.text)['genres']
 
 		unique_genres = list(set([tuple(d.items()) for d in genres_movie + genres_tv]))
@@ -51,10 +53,11 @@ class Extract:
 		self._genres_map[10768] = ['Guerra', 'Política']
 		self._genres_map[10759] = ['Ação', 'Aventura']
 
+
 	def _get_details(self):
 		for media in self._response:
 			endpoint = f'/{self._type}/{media["id"]}'
-			res = requests.get(BASE_URL + endpoint, params=self._default_params)
+			res = self._make_request(endpoint)
 			data = {}
 			values = {}
 
@@ -81,29 +84,14 @@ class Extract:
 				raise Exception(f'Error on request for detail [media {media["id"]}]')
 
 
-	def _get_media(self, initial_page = None, final_page = None, params = {}):
-		if not initial_page:
-			initial_page = 0
-		if not final_page or final_page < initial_page:
-			final_page = initial_page
-
-		self._response = []
-		for page in range(initial_page, final_page + 1):
-			params['page'] = page
-			res = self._make_request(self._endpoint, params)
-			if res.ok:
-				responseData = json.loads(res.text)
-				if not responseData['results']:
-					break
-				self._response.extend(responseData['results'])
-			else:
-				raise Exception(f'Error on request [page {page}] - status {res.status_code}')
+	def _get_media(self, initial_page = None, final_page = None, *args, **kwargs):
+		...
 
 
 	def _serialize_genres(self):
 		for media in self._response:
 			media['genres'] = []
-			for genre_id in media['genre_ids']:
+			for genre_id in media['genre_ids'] or []:
 				if type(self._genres_map[genre_id]) == list:
 					for g in self._genres_map[genre_id]:
 						media['genres'].append(g)
