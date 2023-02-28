@@ -134,3 +134,6 @@ dmypy.json
 # Airflow logs
 airflow-docker/logs
 
+# TMDB export files
+files/*
+!files/.gitkeep
