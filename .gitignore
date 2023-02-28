@@ -127,4 +127,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Settings
 /ETL/settings.py
+
+# Airflow logs
+airflow-docker/logs
+

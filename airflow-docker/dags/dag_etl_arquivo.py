@@ -31,3 +31,6 @@ def generate_dag():
 
 
     cleanup(break_in_pieces(extract(download(doc))))
+    
+    
+generate_dag()
