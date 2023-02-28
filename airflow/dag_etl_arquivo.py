@@ -24,6 +24,10 @@ def generate_dag():
     @task
     def break_in_pieces(doc : dict):
         return doc
+    
+    @task
+    def cleanup(doc : dict):
+        return doc
 
 
-    break_in_pieces(extract(download()))
+    cleanup(break_in_pieces(extract(download(doc))))
