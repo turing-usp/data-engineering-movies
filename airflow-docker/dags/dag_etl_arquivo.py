@@ -1,12 +1,10 @@
 from datetime import datetime
 from airflow.decorators import task, dag
 
-
-
 @dag(
-    "download_and_process_file",
-    schedule_interval = "30 11 * * 1",
-    start_date=datetime(2023, 1, 1),
+    "download_and_process_file", # Nome da dag
+    schedule_interval = "30 11 * * 1", # Agendamento da execução (CRON: https://crontab.guru/)
+    start_date=datetime(2023, 1, 1), 
     catchup=False,
 )
 def generate_dag():
@@ -32,5 +30,5 @@ def generate_dag():
 
     cleanup(break_in_pieces(extract(download(doc))))
     
-    
-generate_dag()
+
+generate_dag() # Instancia DAG
