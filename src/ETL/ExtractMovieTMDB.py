@@ -15,7 +15,7 @@ class ExtractExportsTMDB(Extract):
 			file_month, file_day, file_year = kwargs['month'], kwargs['day'], kwargs['year']
 			date_string = f'{file_month:02}_{file_day:02}_{file_year:02}'
 			file_directory = os.path.join(files_dir, date_string)
-			file_basename = os.path.join(file_directory, f'movie_ids_{date_string}')
+			file_basename = os.path.join(file_directory, f'{self._type}_ids_{date_string}')
 			filenames = [f'{file_basename}_parte{num:02}.json' for num in range(initial_page-1, final_page)]
 			for file in filenames:
 				with open(file, 'r') as curr_file:
@@ -43,7 +43,7 @@ if __name__ == '__main__':
 			'func': lambda x: [g['id'] for g in x]
 		}
 	]
-	extract = ExtractExportsTMDB(['title', 'original_title', 'overview', 'poster_path', 'media_type', 'popularity', 'release_date', 'vote_average', 'vote_count', 'imdb_id', 'status', 'revenue', 'budget', 'release_year', {'fieldName': 'genres', 'finalName': 'genre_ids', 'func': lambda x: [g['id'] for g in x]}], 'movie')
+	extract = ExtractExportsTMDB(fields, 'movie')
 	df = extract.get_dataframe(os.path.join('..', '..', 'files'), month=2, day=28, year=2023)
 	print(df.head())
 	print(df.info())
