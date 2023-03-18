@@ -35,3 +35,20 @@ class ExtractDataTMDB(Extract):
 		self._create_dataframe()
 		self._dataframe['type'] = route_name
 		return self._dataframe
+
+
+if __name__ == '__main__':
+	import os
+
+	fields = [
+		'title', 'original_title', 'overview', 'poster_path', 
+		'popularity', 'release_date', 'vote_average', 
+		'vote_count', 'imdb_id', 'status', 'revenue', 'budget', 'release_year', 
+		{
+			'fieldName': 'genres', 'finalName': 'genre_ids', 
+			'func': lambda x: [g['id'] for g in x]
+		}
+	]
+	extract = ExtractDataTMDB(details=fields, media_type='movie', show_credits=True)
+	df = extract.get_route('/trending/:t/week', initial_page=1, final_page=4, route_name='trending_movie')
+	df.to_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tmp', 'trending_week.csv'))

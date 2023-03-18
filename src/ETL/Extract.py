@@ -8,7 +8,7 @@ from settings import API_KEY, BASE_URL
 class Extract:
 
 
-	def __init__(self, details = [], media_type = 'movie'):
+	def __init__(self, details = [], media_type = 'movie', show_credits=False):
 		self._response = []
 		self._dataframe = pd.DataFrame()
 		self._type = media_type
@@ -16,6 +16,7 @@ class Extract:
 		self._default_params = {'api_key': API_KEY, 'language': 'pt-BR'}
 		self._genres_map = {}
 		self._endpoint = ''
+		self._credits = show_credits
 
 		self._get_and_customize_genres()
 	
@@ -57,28 +58,40 @@ class Extract:
 	def _get_details(self):
 		for media in self._response:
 			endpoint = f'/{self._type}/{media["id"]}'
-			res = self._make_request(endpoint)
-			data = {}
+			res_details = self._make_request(endpoint)
+			details_data = {}
 			values = {}
 
-			if res.ok:
+			if res_details.ok:
 				try:
-					data = json.loads(res.text)
+					details_data = json.loads(res_details.text)
 				except:
-					data = {}
+					details_data = {}
 
 				for field in self._details:
 					try:
 						if type(field) != dict:
-							values[field] = data[field]
+							values[field] = details_data[field]
 						else:
 							newFieldName = field['finalName'] # nome que ficará para o campo final
 							serialize = field['func'] # função que irá tratar o dado retornado pela API para aquele campo
 							fieldName = field['fieldName'] # nome do campo dentro do retorno da API
-							values[newFieldName] = serialize(data[fieldName])
+							values[newFieldName] = serialize(details_data[fieldName])
 					except (KeyError):
 						fieldName = field['finalName'] if type(field) == dict else field
 						values[fieldName] = None
+
+				if self._credits:
+					url = f'/movie/{media["id"]}/credits'
+					res_credits = self._make_request(url)
+					if res_credits.ok:
+						credits_data = json.loads(res_credits.content)
+						values['cast'] = list(map(lambda item: item['original_name'], credits_data['cast']))
+						director_found = next(filter(lambda item: item['job'] == 'Director', credits_data['crew']), None)
+						values['director'] = director_found and director_found['original_name']
+					else:
+						raise Exception(f'Error on request for credits detail [media {media["id"]}]')
+					
 				media.update(values)
 			else:
 				raise Exception(f'Error on request for detail [media {media["id"]}]')

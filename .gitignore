@@ -143,3 +143,6 @@ settings.py
 
 #IDE
 .vscode
+
+# Files for testing
+tmp/

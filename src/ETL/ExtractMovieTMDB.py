@@ -30,20 +30,22 @@ class ExtractExportsTMDB(Extract):
 		self._get_details()
 		self._serialize_genres()
 		self._create_dataframe()
+		self._dataframe['type'] = self._type
 		return self._dataframe
 
 
 if __name__ == '__main__':
 	fields = [
-		'title', 'original_title', 'overview', 'poster_path', 
-		'media_type', 'popularity', 'release_date', 'vote_average', 
+		'title', 'original_title', 'overview', 'poster_path',
+		'popularity', 'release_date', 'vote_average', 
 		'vote_count', 'imdb_id', 'status', 'revenue', 'budget', 'release_year', 
 		{
 			'fieldName': 'genres', 'finalName': 'genre_ids', 
 			'func': lambda x: [g['id'] for g in x]
 		}
 	]
-	extract = ExtractExportsTMDB(fields, 'movie')
-	df = extract.get_dataframe(os.path.join('..', '..', 'files'), month=2, day=28, year=2023)
+	extract = ExtractExportsTMDB(fields, 'movie', show_credits=True)
+	df = extract.get_dataframe(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'files'), month=3, day=18, year=2023)
 	print(df.head())
-	print(df.info())
+	print(df.head()['cast'])
+	df.info()
