@@ -140,6 +140,7 @@ files/*
 
 #Setings file
 settings.py
+credentials/
 
 #IDE
 .vscode

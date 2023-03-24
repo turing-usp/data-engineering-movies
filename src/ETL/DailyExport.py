@@ -58,9 +58,9 @@ if __name__ == '__main__':
     import os.path
     from datetime import datetime
 
-    curr_month = datetime.strftime(datetime.strptime('2023-03-9', r'%Y-%m-%d'), r'%m')
-    curr_day = datetime.strftime(datetime.strptime('2023-03-9', r'%Y-%m-%d'), r'%d')
-    curr_year = datetime.strftime(datetime.strptime('2023-03-9', r'%Y-%m-%d'), r'%Y')
+    curr_month = datetime.strftime(datetime.today(), r'%m')
+    curr_day = datetime.strftime(datetime.today(), r'%d')
+    curr_year = datetime.strftime(datetime.today(), r'%Y')
 
     filename = f'movie_ids_{curr_month}_{curr_day}_{curr_year}.json'
     directory = f'{curr_month}_{curr_day}_{curr_year}'

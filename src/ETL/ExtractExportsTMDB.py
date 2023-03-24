@@ -1,10 +1,14 @@
 import json
 import os
+import sys
 
-from Extract import Extract
+
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
+from src.ETL.Extract import Extract
+from src.ETL.DeserializeMixin import DeserializeMixin
 
 
-class ExtractExportsTMDB(Extract):
+class ExtractExportsTMDB(Extract, DeserializeMixin):
 
 
 	def _get_media(self, files_dir, initial_page = None, final_page = None, *args, **kwargs):
@@ -13,7 +17,7 @@ class ExtractExportsTMDB(Extract):
 		self._response = []
 		try:
 			file_month, file_day, file_year = kwargs['month'], kwargs['day'], kwargs['year']
-			date_string = f'{file_month:02}_{file_day:02}_{file_year:02}'
+			date_string = f'{file_month}_{file_day}_{file_year}'
 			file_directory = os.path.join(files_dir, date_string)
 			file_basename = os.path.join(file_directory, f'{self._type}_ids_{date_string}')
 			filenames = [f'{file_basename}_parte{num:02}.json' for num in range(initial_page-1, final_page)]
@@ -26,11 +30,10 @@ class ExtractExportsTMDB(Extract):
 
 
 	def get_dataframe(self, files_dir, month, day, year, initial_page = 1, final_page = 1):
+		self._get_and_customize_genres()
 		self._get_media(files_dir, initial_page, final_page, month=month, day=day, year=year)
 		self._get_details()
-		self._serialize_genres()
 		self._create_dataframe()
-		self._dataframe['type'] = self._type
 		return self._dataframe
 
 
@@ -45,7 +48,6 @@ if __name__ == '__main__':
 		}
 	]
 	extract = ExtractExportsTMDB(fields, 'movie', show_credits=True)
-	df = extract.get_dataframe(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'files'), month=3, day=18, year=2023)
+	df = extract.get_dataframe(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'files'), month='03', day='24', year='2023')
 	print(df.head())
-	print(df.head()['cast'])
 	df.info()

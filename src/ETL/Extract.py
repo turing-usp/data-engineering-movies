@@ -1,8 +1,11 @@
 import requests
 import pandas as pd
 import json
+import os
+import sys
 
-from settings import API_KEY, BASE_URL
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
+from src.ETL.settings import API_KEY, BASE_URL
 
 
 class Extract:
@@ -10,7 +13,7 @@ class Extract:
 
 	def __init__(self, details = [], media_type = 'movie', show_credits=False):
 		self._response = []
-		self._dataframe = pd.DataFrame()
+		self._dataframe = None
 		self._type = media_type
 		self._details = details
 		self._default_params = {'api_key': API_KEY, 'language': 'pt-BR'}
@@ -18,8 +21,6 @@ class Extract:
 		self._endpoint = ''
 		self._credits = show_credits
 
-		self._get_and_customize_genres()
-	
 	
 	def _make_request(self, endpoint = '', params = {}):
 		if params:
@@ -54,13 +55,18 @@ class Extract:
 		self._genres_map[10768] = ['Guerra', 'Política']
 		self._genres_map[10759] = ['Ação', 'Aventura']
 
+		self._genres_map = {str(key):value for key, value in self._genres_map.items()}
 
 	def _get_details(self):
+		i = 1
 		for media in self._response:
+			print(f'Getting details for {media["original_title"]} ({i}/{len(self._response)})')
+			media['type'] = self._type
 			endpoint = f'/{self._type}/{media["id"]}'
 			res_details = self._make_request(endpoint)
 			details_data = {}
 			values = {}
+			i += 1
 
 			if res_details.ok:
 				try:
@@ -91,8 +97,9 @@ class Extract:
 						values['director'] = director_found and director_found['original_name']
 					else:
 						raise Exception(f'Error on request for credits detail [media {media["id"]}]')
-					
+				
 				media.update(values)
+				self._serialize_genre(media)
 			else:
 				raise Exception(f'Error on request for detail [media {media["id"]}]')
 
@@ -101,16 +108,15 @@ class Extract:
 		...
 
 
-	def _serialize_genres(self):
-		for media in self._response:
-			media['genres'] = []
-			for genre_id in media['genre_ids'] or []:
-				if type(self._genres_map[genre_id]) == list:
-					for g in self._genres_map[genre_id]:
-						media['genres'].append(g)
-				else:
-					media['genres'].append(self._genres_map[genre_id])
-			media.pop('genre_ids')
+	def _serialize_genre(self, media):
+		media['genres'] = []
+		for genre_id in media['genre_ids'] or []:
+			if type(self._genres_map[str(genre_id)]) == list:
+				for g in self._genres_map[str(genre_id)]:
+					media['genres'].append(g)
+			else:
+				media['genres'].append(self._genres_map[str(genre_id)])
+		media.pop('genre_ids')
 
 
 	def _create_dataframe(self):

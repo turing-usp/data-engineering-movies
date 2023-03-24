@@ -29,11 +29,10 @@ class ExtractDataTMDB(Extract):
 
 	def get_route(self, route, initial_page = 1, final_page = 1, route_name='', params = {}):
 		self._endpoint = route.replace(':t', self._type)
+		self._get_and_customize_genres()
 		self._get_media(initial_page, final_page, params=params)
 		self._get_details()
-		self._serialize_genres()
 		self._create_dataframe()
-		self._dataframe['type'] = route_name
 		return self._dataframe
 
 
