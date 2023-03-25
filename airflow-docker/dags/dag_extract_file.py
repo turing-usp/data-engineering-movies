@@ -3,7 +3,7 @@ from airflow.models import Variable
 import os
 from datetime import datetime
 
-from src.ETL.DailyExport import DailyExport
+from src.ETL.daily_export import download_file, extract_file, break_file, cleanup 
 
 @dag(
     "extract_file", # Nome da dag
@@ -15,44 +15,36 @@ from src.ETL.DailyExport import DailyExport
 def generate_dag():
 
   @task
-  def download(export_attrs, **kwargs):
-    export = DailyExport()
-    export.fromDict(export_attrs)
-    date = datetime.strptime(kwargs['ds'], r'%Y-%m-%d')
+  def download(**context):
+    date = datetime.strptime(context['ds'], r'%Y-%m-%d')
     year = datetime.strftime(date, r'%Y')
     day = datetime.strftime(date, r'%d')
     month = datetime.strftime(date, r'%m')
-    filename = f'movie_ids_{month}_{day}_{year}.json'
-    directory = f'{month}_{day}_{year}'
-    export.download_file(filename, directory)
-    return export.__dict__
+    string_date = f'{month}_{day}_{year}'
+    
+    filename = f'movie_ids_{string_date}.json'
+    base_directory = os.path.join(Variable.get('FILES_DIR'), string_date)
+    file_url = f'http://files.tmdb.org/p/exports/{filename}.gz'
+
+    download_file(file_url, base_directory)
+
+    return {'filename': filename, 'base_directory': base_directory}
 
   @task
-  def extract(export_attrs):
-    export = DailyExport()
-    export.fromDict(export_attrs)
-    export.extract_file()
-    return export.__dict__
+  def extract(doc):
+    extract_file(doc.get('base_directory'), doc.get('filename'))
+    return doc
 
   @task
-  def break_in_pieces(export_attrs):
-    export = DailyExport()
-    export.fromDict(export_attrs)
-    export.break_file()
-    return export.__dict__
+  def break_in_pieces(doc):
+    break_file(doc.get('base_directory'), doc.get('filename'))
+    return doc
   
   @task
-  def cleanup(export_attrs):
-    export = DailyExport()
-    export.fromDict(export_attrs)
-    export.cleanup()
+  def cleanup_trash(doc):
+    cleanup(doc.get('base_directory'), doc.get('filename'))
+    return doc
 
-  file_base_url = 'http://files.tmdb.org/p/exports'
-  final_directory = Variable.get('FILES_DIR')	
-  export = DailyExport(file_base_url, final_directory)
-
-  # executando as tasks
-  cleanup(break_in_pieces(extract(download(export.__dict__))))
-    
+  cleanup_trash(break_in_pieces(extract(download())))
 
 generate_dag() # Instancia DAG
