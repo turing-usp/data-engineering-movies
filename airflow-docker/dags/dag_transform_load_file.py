@@ -4,7 +4,7 @@ from datetime import datetime
 from datetime import timedelta
 import os
 
-from src.ETL.extract import get_detail, create_dataframe, get_and_customize_genres
+from tmdb_api import get_detail, create_dataframe, get_and_customize_genres
 from src.ETL.extract_exports import get_media
 from src.ETL.upload import upload_to_bq_from_dataframe
 

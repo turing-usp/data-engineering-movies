@@ -1,8 +1,16 @@
 import json
+from typing import Literal
+import logging
 
-from .extract import make_request, get_and_customize_genres, get_detailed_response_list, create_dataframe
+from tmdb_api import make_request, get_and_customize_genres, get_detailed_response_list, create_dataframe
 
-def get_media(endpoint, initial_page = 1, final_page = None, params = {}):
+logging.getLogger().setLevel(logging.INFO)
+
+def get_media(endpoint: str, initial_page: int, final_page: int = None, params: dict = {}):
+  """
+    - Faz a requisição para a rota passada em `endpoint` e retorna uma lista com todos
+  os resultados que aparecem da página `initial_page`até a página `final_page`
+  """
   response = []
 
   for page in range(initial_page, final_page + 1):
@@ -18,7 +26,16 @@ def get_media(endpoint, initial_page = 1, final_page = None, params = {}):
 
   return response
     
-def get_route(route, media_type, details, initial_page = 1, final_page = None, params={}):
+def get_route(route: int, media_type: Literal['movie', 'tv'], details: list, initial_page: int = 1, 
+              final_page: int = None, params: dict={}):
+  """
+    - Faz a requisição para obter os resultados da API na rota `route`
+      - Onde iria aparecer "movie" ou "tv" deve ser passado o placeholder ":t", que será
+    substituído pelo valor de `media_type`
+    - Pega os detalhes desses resultados a partir do campo `details`
+    - Mostra os resultados da página `initial_page` até a página `final_page`
+    - Os parâmetros passados na requisição para a API devem estar em `params`
+  """
   
   if not final_page or final_page < initial_page:
     final_page = initial_page
