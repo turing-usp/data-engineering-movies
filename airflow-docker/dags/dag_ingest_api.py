@@ -1,9 +1,9 @@
 from airflow.decorators import task, dag
 from airflow.models import Variable
-from datetime import timezone
 from airflow import DAG
+from datetime import timezone
 from datetime import datetime
-from src.ETL.extract_data import get_route 
+from extract_data import get_route 
 import pandas as pd
 
 with DAG(
