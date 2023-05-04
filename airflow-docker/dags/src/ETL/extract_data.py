@@ -1,8 +1,8 @@
 import json
 from typing import Literal
 import logging
-
-from tmdb_api import make_request, get_and_customize_genres, get_detailed_response_list, create_dataframe
+import pandas as pd
+from .tmdb_api import make_request, get_and_customize_genres, get_detailed_response_list, create_dataframe
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -60,3 +60,25 @@ if __name__ == '__main__':
 	]
   df = get_route('/trending/:t/week', 'movie', fields, 1)
   print(df.head())
+
+def get_discover_movie_pages(params):
+    return json.loads(make_request('/discover/movie', params).content.decode())['total_pages']
+
+def make_discover_request(page=1, params={}):
+    params['page'] = page
+
+    return json.loads(make_request('/discover/movie', params).content.decode())
+
+def pega_resultados_de_intervalo_de_paginas(inicio: int, fim: int, params: dict) -> pd.DataFrame:
+    results = []
+    for page in range(inicio, fim):
+        response = make_discover_request(page, params=params)
+        if 'results' not in response:
+            print('Deu ruim, não tem resultados')
+            print(page)
+            print(response)
+            continue
+
+        results.extend(response['results'])
+    result_df = pd.DataFrame(results)
+    return result_df

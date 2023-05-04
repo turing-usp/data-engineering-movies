@@ -4,7 +4,7 @@ import pandas as pd
 import logging
 from typing import Literal, List, Union
 
-from settings import API_KEY, BASE_URL
+from .settings import API_KEY, BASE_URL
 
 
 def make_request(endpoint: str, params: dict = {}):
@@ -184,3 +184,10 @@ def get_detailed_response_list(response: dict, media_type: Literal['movie', 'tv'
   """
   for media in response:
     get_detail(media, media_type, details, genres_map)
+
+
+def get_discover(page, params={}):
+    params['page'] = page
+    response = make_request('/discover/movie', params=params)
+
+    return json.loads(response.content.decode())
