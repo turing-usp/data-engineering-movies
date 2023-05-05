@@ -36,6 +36,7 @@ with DAG(
             params = {
                 'primary_release_date.gte': interval[0],
                 'primary_release_date.lte': interval[1],
+                'language': 'pt-BR'
             }
             return (get_discover_movie_pages(params), params)
 
@@ -59,10 +60,11 @@ with DAG(
                 # Consolida Dataframe final (Junção dos dfs gerados pelos processos paralelos)
                 final_df = pd.concat(resultados, ignore_index=True)
 
-            return final_df
+            return final_df.to_dict()
         
         @task
-        def upload_to_bq(df):
+        def upload_to_bq(df_dict):
+            df = pd.DataFrame(df_dict)
 
             credentials = service_account.Credentials.from_service_account_file(
                 filename=Variable.get('credentials_path'),
@@ -72,6 +74,7 @@ with DAG(
             df_to_discover_table: pd.DataFrame = df.drop(['genre_ids', 'backdrop_path', 'overview', 'vote_average', 'vote_count'], axis=1)
 
             many_to_many: pd.DataFrame = df[['id', 'genre_ids']].explode('genre_ids').dropna(axis=0)
+            many_to_many['genre_ids'] = many_to_many['genre_ids'].astype(int)
 
             df_to_discover_table.to_gbq(
                 destination_table='turingdb.data_warehouse.discover',
