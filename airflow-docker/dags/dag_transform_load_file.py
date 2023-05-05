@@ -7,7 +7,7 @@ import os
 
 from src.ETL.tmdb_api import get_detail, create_dataframe, get_and_customize_genres
 from src.ETL.extract_data import get_media
-from src.ETL.upload import upload_to_bq_from_dataframe
+from src.ETL.upload import *
 
 @dag(
     "transform_and_load_file", # Nome da dag

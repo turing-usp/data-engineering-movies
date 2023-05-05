@@ -10,7 +10,7 @@ import pandas as pd
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 with DAG(
-    "extract_file", # Nome da dag
+    "ingest_tmdb_api", # Nome da dag
     schedule="30 11 * * *",
     start_date=datetime(2022, 12, 4, 10, 0),
     catchup=False,
